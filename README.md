@@ -1,2 +1,2 @@
 # summer
-Personal AI assistant. 
+Personal AI assistant for easier management of the basic tasks. 
