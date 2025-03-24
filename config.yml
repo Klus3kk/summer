@@ -1,0 +1,42 @@
+# Summer AI Assistant Configuration
+
+# General settings
+assistant:
+  name: "Summer"
+  version: "0.1.0"
+  debug: false
+
+# Listener configuration
+listener:
+  engine: "google"  # Options: google, sphinx, whisper
+  timeout: 5
+  phrase_time_limit: 5
+  energy_threshold: 300
+  adjust_for_ambient_noise: true
+
+# NLP configuration
+nlp:
+  backend: "langchain"  # Options: langchain, rule_based, openai
+  model_name: "gpt-4"
+  temperature: 0.1
+
+# Command processor configuration
+command:
+  default_app_paths:
+    notepad: "notepad.exe"
+    paint: "mspaint.exe"
+    calculator: "calc.exe"
+    browser: "chrome.exe"
+
+# Response generator configuration
+response:
+  style: "friendly"  # Options: friendly, professional, minimalist
+  include_emoji: true
+
+# Text-to-Speech configuration
+tts:
+  enabled: true
+  voice: "nova"  # Options: alloy, echo, fable, onyx, nova, shimmer
+  model: "gpt-4o-mini-tts"
+  output_format: "mp3"
+  instructions: "Speak in a friendly, helpful tone with a slight hint of playfulness."
