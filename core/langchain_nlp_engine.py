@@ -14,7 +14,13 @@ try:
     from langchain.prompts import PromptTemplate
     from langchain_openai import ChatOpenAI
     from langchain.output_parsers import PydanticOutputParser
-    from langchain.pydantic_v1 import BaseModel, Field
+    # Import directly from pydantic
+    try:
+        # Try Pydantic v2 import
+        from pydantic import BaseModel, Field
+    except ImportError:
+        # Fall back to Pydantic v1 import
+        from pydantic.v1 import BaseModel, Field
     from langchain.memory import ConversationBufferMemory
     LANGCHAIN_AVAILABLE = True
 except ImportError:
@@ -61,10 +67,7 @@ class LangChainNLPEngine:
             self.logger.error("OpenAI API key not found. This engine requires an API key.")
             raise ValueError("OpenAI API key is required for this engine.")
         
-        # Initialize the Pydantic parser
-        self.parser = PydanticOutputParser(pydantic_object=CommandIntent)
-        
-        # Initialize the LLM
+        # Initialize the LLM first
         self.llm = ChatOpenAI(
             model=self.model_name,
             temperature=self.temperature,
@@ -76,6 +79,21 @@ class LangChainNLPEngine:
             memory_key="chat_history",
             return_messages=True
         )
+        
+        # Generate format instructions manually instead of using PydanticOutputParser
+        format_instructions = """The output should be formatted as a JSON object with the following keys:
+- intent: The identified intent (string)
+- app_name: The target application name if applicable (string or null)
+- parameters: Additional parameters for the command (object)
+- confidence: Confidence score between 0 and 1 (number)
+
+For example:
+{
+  "intent": "open_application",
+  "app_name": "notepad",
+  "parameters": {},
+  "confidence": 0.9
+}"""
         
         # Define the prompt template
         self.prompt = PromptTemplate(
@@ -104,7 +122,7 @@ Parse this into a structured command with an intent and parameters.
 {format_instructions}
 """,
             input_variables=["command", "chat_history", "system_state"],
-            partial_variables={"format_instructions": self.parser.get_format_instructions()}
+            partial_variables={"format_instructions": format_instructions}
         )
         
         # Create the chain
@@ -177,23 +195,13 @@ Parse this into a structured command with an intent and parameters.
                 # If no text field, use the whole response
                 result = response
             
-            # Ensure we have the required fields
-            if isinstance(result, CommandIntent):
-                # It's already a Pydantic model
-                return {
-                    "intent": result.intent,
-                    "parameters": result.parameters,
-                    "confidence": result.confidence,
-                    "original_text": text
-                }
-            else:
-                # Parse the dictionary
-                return {
-                    "intent": result.get("intent", "unknown"),
-                    "parameters": result.get("parameters", {}),
-                    "confidence": result.get("confidence", 0.5),
-                    "original_text": text
-                }
+            # Parse the dictionary
+            return {
+                "intent": result.get("intent", "unknown"),
+                "parameters": result.get("parameters", {}),
+                "confidence": result.get("confidence", 0.5),
+                "original_text": text
+            }
                 
         except Exception as e:
             self.logger.error(f"Error processing with LangChain: {e}")

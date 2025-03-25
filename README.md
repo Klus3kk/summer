@@ -1,4 +1,4 @@
-# Summer 
+# Summer
 
 Personal AI assistant for easier management of basic Windows tasks through natural language interaction.
 
@@ -26,13 +26,13 @@ Summer is a voice-activated AI assistant that can control Windows applications a
 
 Summer is built with a modular architecture:
 
-- **Core Components**:
+- **Core Components**
   - Speech Recognition (input)
   - Natural Language Processing (understanding)
   - Command Processing (execution)
   - Text-to-Speech (output)
 
-- **Advanced Technologies**:
+- **Advanced Technologies**
   - **LangChain**: For sophisticated reasoning and command interpretation
   - **OpenAI GPT-4**: For advanced natural language understanding
   - **OpenAI TTS**: For lifelike voice responses
@@ -53,21 +53,66 @@ Summer is built with a modular architecture:
    cd summer
    ```
 
-2. Install dependencies:
+2. Create and activate a virtual environment:
+   ```
+   # Create a virtual environment
+   python -m venv venv
+
+   # Activate the virtual environment
+   # For Windows Command Prompt:
+   venv\Scripts\activate
+   # For Windows PowerShell:
+   .\venv\Scripts\Activate.ps1
+   # For Git Bash or similar:
+   source venv/Scripts/activate
+   ```
+
+3. Install dependencies:
    ```
    pip install -r requirements.txt
    ```
 
-3. Create an `.env` file with your API keys:
+4. Create an `.env` file with your API keys:
    ```
+   # Copy the example file
    cp .env.example .env
-   # Edit .env with your actual API keys
+   
+   # Edit the .env file and add your OpenAI API key
+   # OPENAI_API_KEY=your-openai-api-key-here
    ```
 
-4. Run the assistant:
+5. Run the assistant:
    ```
    python main.py
    ```
+
+6. Interact with Summer:
+   - Say "Hello Summer" to begin
+   - Press Ctrl+C to exit
+
+## Troubleshooting
+
+### Common Installation Issues
+
+- **PyAudio installation fails**: 
+  Try installing from a wheel file:
+  ```
+  pip install pipwin
+  pipwin install pyaudio
+  ```
+
+- **python-vlc issues**:
+  Ensure you have VLC media player installed on your system
+
+- **Speech Recognition not working**:
+  Check your microphone settings and ensure it's the default input device
+
+### Other Issues
+
+If you encounter other issues:
+1. Check the `summer.log` file for error details
+2. Ensure all dependencies are installed correctly
+3. Verify your API keys are set properly in the `.env` file
 
 ## Configuration
 
