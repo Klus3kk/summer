@@ -69,8 +69,13 @@ class PaintController:
         self.logger.info("Opening Paint")
         
         try:
+            # Make sure the path is correct for mspaint.exe
+            if not os.path.exists(self.app_path):
+                # Try the default location if the configured path doesn't exist
+                self.app_path = "mspaint.exe"
+            
             # Launch Paint as a subprocess
-            self.process = subprocess.Popen([self.app_path])
+            self.process = subprocess.Popen(self.app_path, shell=True)
             
             # Wait for the window to appear
             time.sleep(2.0)

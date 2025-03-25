@@ -31,7 +31,7 @@ class ResponseGenerator:
         
         self.logger.info("Response generator initialized")
     
-    def _load_templates(self) -> Dict[str, List[str]]:
+    def _load_templates(self) -> Dict[str, Dict[str, List[str]]]:
         """
         Load response templates for different result types.
         
@@ -61,6 +61,11 @@ class ResponseGenerator:
                     "I've drawn a {shape} in {app_name}.",
                     "Created a {shape} as requested.",
                     "There you go, a {shape} in {app_name}."
+                ],
+                "greeting": [
+                    "Hello! I'm Summer, your personal Windows assistant. How can I help you today?",
+                    "Hi there! I'm Summer. What can I do for you?",
+                    "Hello! Summer assistant at your service. What would you like me to do?"
                 ],
                 "default": [
                     "Done!",

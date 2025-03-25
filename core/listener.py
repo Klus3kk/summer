@@ -6,7 +6,8 @@ Handles speech recognition to convert spoken commands to text.
 
 import logging
 import time
-from typing import Dict, Any, Optional
+import os
+from typing import Dict, Any, Optional, List
 
 # Speech recognition libraries
 try:
@@ -64,10 +65,9 @@ class Listener:
         Returns:
             The recognized text, or None if recognition failed
         """
-        if self.recognizer is None:
-            self.logger.warning("Speech recognition not available, using mock implementation")
-            # In a real implementation, you would replace this with actual input
-            # This is just for development without speech recognition
+        if self.recognizer is None or os.getenv("USE_KEYBOARD", "0") == "1":
+            self.logger.info("Using keyboard input")
+            # Use keyboard input for testing or when speech recognition is unavailable
             return input("Enter command: ")
         
         try:

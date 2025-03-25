@@ -1,168 +1,204 @@
 """
-Summer AI Assistant - Response Generator
+Summer AI Assistant - Notepad Controller
 --------------------------------------
-Generates appropriate responses based on intent results.
+Controls the Windows Notepad application.
 """
 
 import logging
-import random
-from typing import Dict, Any, Optional, List
+import time
+import subprocess
+import os
+from typing import Dict, Any, Optional
 
-class ResponseGenerator:
+try:
+    import pyautogui
+    PYAUTOGUI_AVAILABLE = True
+except ImportError:
+    PYAUTOGUI_AVAILABLE = False
+
+class NotepadController:
     """
-    Generates appropriate responses to user commands based on the results.
+    Controller for the Windows Notepad application.
     
-    This class converts the structured result of command execution into
-    natural language responses for the user.
+    This class handles operations related to Notepad, such as:
+    - Opening and closing Notepad
+    - Writing text
     """
     
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
-        Initialize the response generator with the specified configuration.
+        Initialize the Notepad controller with the specified configuration.
         
         Args:
-            config: Configuration dictionary for the response generator
+            config: Configuration dictionary for the controller
         """
-        self.logger = logging.getLogger("summer.response_generator")
+        self.logger = logging.getLogger("summer.apps.notepad")
         self.config = config or {}
         
-        # Load response templates
-        self.templates = self._load_templates()
+        # Check if pyautogui is available
+        if not PYAUTOGUI_AVAILABLE:
+            self.logger.warning("pyautogui library not found. Some features may be limited.")
         
-        self.logger.info("Response generator initialized")
+        # App-specific configuration
+        self.app_path = self.config.get("app_path", "notepad.exe")
+        self.window_title = "Untitled - Notepad"
+        self.process = None
+        
+        self.logger.info("Notepad controller initialized")
     
-    def _load_templates(self) -> Dict[str, List[str]]:
+    def open(self) -> Dict[str, Any]:
         """
-        Load response templates for different result types.
+        Open Notepad.
         
         Returns:
-            A dictionary mapping result types to lists of response templates
+            A dictionary containing the result of the operation
         """
-        # In a full implementation, these could be loaded from a JSON file
-        # For now, we'll define some basic templates inline
-        return {
-            "success": {
-                "open_application": [
-                    "I've opened {app_name} for you.",
-                    "{app_name} is now open.",
-                    "Launched {app_name}."
-                ],
-                "close_application": [
-                    "I've closed {app_name}.",
-                    "{app_name} is now closed.",
-                    "Closed {app_name} as requested."
-                ],
-                "write_text": [
-                    "I've written \"{content}\" in {app_name}.",
-                    "Text entered in {app_name}.",
-                    "Done! The text is now in {app_name}."
-                ],
-                "draw_shape": [
-                    "I've drawn a {shape} in {app_name}.",
-                    "Created a {shape} as requested.",
-                    "There you go, a {shape} in {app_name}."
-                ],
-                "default": [
-                    "Done!",
-                    "Task completed successfully.",
-                    "I've done that for you."
-                ]
-            },
-            "error": {
-                "unknown_application": [
-                    "I don't know how to work with {app_name}.",
-                    "Sorry, I'm not familiar with {app_name}.",
-                    "I can't control {app_name} yet."
-                ],
-                "unknown_intent": [
-                    "I'm not sure what you want me to do.",
-                    "Could you be more specific?",
-                    "I didn't understand that command."
-                ],
-                "default": [
-                    "I encountered a problem: {error}",
-                    "Sorry, I couldn't do that: {error}",
-                    "There was an issue: {error}"
-                ]
-            }
-        }
-    
-    def generate(self, 
-                intent_data: Dict[str, Any], 
-                result: Dict[str, Any], 
-                context: Optional[Dict[str, Any]] = None) -> str:
-        """
-        Generate a natural language response based on the intent and result.
+        self.logger.info("Opening Notepad")
         
-        Args:
-            intent_data: The recognized intent data
-            result: The result of executing the command
-            context: Optional context information
-        
-        Returns:
-            A natural language response
-        """
-        context = context or {}
-        
-        intent = intent_data.get("intent", "unknown")
-        parameters = intent_data.get("parameters", {})
-        
-        # Determine if the result was successful
-        success = result.get("success", False)
-        
-        # Get the appropriate template category
-        if success:
-            templates = self.templates["success"]
-            # Try to get templates specific to this intent
-            response_templates = templates.get(intent, templates["default"])
-        else:
-            templates = self.templates["error"]
-            error_type = result.get("error_type", "default")
-            response_templates = templates.get(error_type, templates["default"])
-        
-        # Select a random template
-        template = random.choice(response_templates)
-        
-        # Combine all available parameters for formatting
-        format_params = {**parameters, **result}
-        
-        # Special handling for certain parameters
-        if "app_name" in parameters:
-            format_params["app_name"] = parameters["app_name"].title()
-        
-        if "shape" in parameters:
-            format_params["shape"] = parameters["shape"].lower()
-        
-        # Format the template with the parameters
         try:
-            response = template.format(**format_params)
-        except KeyError as e:
-            self.logger.error(f"Missing parameter in template: {e}")
-            # Fall back to the result message
-            response = result.get("message", "Task completed.")
-        
-        return response
+            # Make sure the path is correct for notepad.exe
+            if not os.path.exists(self.app_path):
+                # Try the default location if the configured path doesn't exist
+                self.app_path = "notepad.exe"
+            
+            # Launch Notepad as a subprocess with shell=True to ensure it works
+            self.process = subprocess.Popen(self.app_path, shell=True)
+            
+            # Wait for the window to appear
+            time.sleep(1.0)
+            
+            return {
+                "success": True,
+                "message": "Notepad opened successfully"
+            }
+        except Exception as e:
+            self.logger.error(f"Error opening Notepad: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "message": "Failed to open Notepad"
+            }
     
-    def generate_error(self, error_message: str) -> str:
+    def close(self) -> Dict[str, Any]:
         """
-        Generate a response for an unexpected error.
-        
-        Args:
-            error_message: The error message
+        Close Notepad.
         
         Returns:
-            A natural language response
+            A dictionary containing the result of the operation
         """
-        templates = [
-            "Sorry, I encountered an error: {error}",
-            "There was a problem: {error}",
-            "I couldn't complete that action because: {error}"
-        ]
+        self.logger.info("Closing Notepad")
         
-        template = random.choice(templates)
-        return template.format(error=error_message)
+        try:
+            if self.process:
+                # Try to terminate the process gracefully
+                self.process.terminate()
+                # Give it some time to close
+                self.process.wait(timeout=2)
+                self.process = None
+            else:
+                # If we don't have a reference to the process, use pyautogui
+                if PYAUTOGUI_AVAILABLE:
+                    # Try to focus on Notepad
+                    self._focus_window()
+                    # Send Alt+F4 to close
+                    pyautogui.hotkey('alt', 'f4')
+                    # If there are unsaved changes, handle the save dialog
+                    time.sleep(0.5)
+                    # If a dialog appears, press "Don't Save"
+                    pyautogui.press('n')
+                else:
+                    # As a last resort, use taskkill
+                    subprocess.run(["taskkill", "/f", "/im", "notepad.exe"])
+            
+            return {
+                "success": True,
+                "message": "Notepad closed successfully"
+            }
+        except Exception as e:
+            self.logger.error(f"Error closing Notepad: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "message": "Failed to close Notepad"
+            }
     
-    def shutdown(self):
-        """Release resources and shutdown the response generator."""
-        self.logger.info("Shutting down response generator")
-        # Nothing specific to clean up in this implementation
+    def write_text(self, text: str) -> Dict[str, Any]:
+        """
+        Write text in Notepad.
+        
+        Args:
+            text: The text to write
+        
+        Returns:
+            A dictionary containing the result of the operation
+        """
+        self.logger.info(f"Writing text in Notepad: {text}")
+        
+        if not PYAUTOGUI_AVAILABLE:
+            return {
+                "success": False,
+                "error": "pyautogui not available",
+                "message": "Cannot write text without pyautogui"
+            }
+        
+        try:
+            # Make sure Notepad is open
+            if not self._is_notepad_running():
+                self.open()
+            
+            # Focus on Notepad window
+            self._focus_window()
+            
+            # Select all existing text (Ctrl+A) and delete it
+            pyautogui.hotkey('ctrl', 'a')
+            pyautogui.press('delete')
+            
+            # Type the new text
+            pyautogui.write(text)
+            
+            return {
+                "success": True,
+                "message": f"Wrote text in Notepad"
+            }
+        except Exception as e:
+            self.logger.error(f"Error writing in Notepad: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "message": "Failed to write text in Notepad"
+            }
+    
+    def _is_notepad_running(self) -> bool:
+        """
+        Check if Notepad is currently running.
+        
+        Returns:
+            True if Notepad is running, False otherwise
+        """
+        # A simple check by looking for the process
+        try:
+            output = subprocess.check_output(["tasklist", "/fi", "imagename eq notepad.exe"])
+            return b"notepad.exe" in output
+        except:
+            return False
+    
+    def _focus_window(self) -> bool:
+        """
+        Focus on the Notepad window.
+        
+        Returns:
+            True if successfully focused, False otherwise
+        """
+        if not PYAUTOGUI_AVAILABLE:
+            return False
+        
+        try:
+            # Try to find and focus on a window with "Notepad" in the title
+            windows = pyautogui.getWindowsWithTitle("Notepad")
+            if windows:
+                windows[0].activate()
+                time.sleep(0.2)  # Give it a moment to come to the foreground
+                return True
+            return False
+        except:
+            return False

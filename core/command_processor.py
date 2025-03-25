@@ -73,6 +73,7 @@ class CommandProcessor:
             "close_application": self._handle_close_application,
             "write_text": self._handle_write_text,
             "draw_shape": self._handle_draw_shape,
+            "greeting": self._handle_greeting,
             "unknown": self._handle_unknown_intent,
             # Add more handlers as needed
         }
@@ -114,18 +115,32 @@ class CommandProcessor:
         except Exception as e:
             self.logger.error(f"Error loading app controllers: {e}")
             
-        # For now, since we don't have actual controllers yet, we'll use placeholders
-        if not self.app_controllers:
-            self.logger.warning("No app controllers found, using placeholders")
-            
-            # Create placeholder controllers for testing
-            self.app_controllers = {
-                "notepad": PlaceholderController("notepad"),
-                "paint": PlaceholderController("paint"),
-                "calculator": PlaceholderController("calculator"),
-                "browser": PlaceholderController("browser"),
-                "system": PlaceholderController("system"),
-            }
+        # Add controllers for apps that might not be dynamically loaded
+        if "paint" not in self.app_controllers:
+            try:
+                # First try to import from apps
+                from apps.paint import PaintController
+                self.app_controllers["paint"] = PaintController(self.config.get("paint", {}))
+                self.logger.info("Manually loaded controller for paint")
+            except Exception as e:
+                self.logger.error(f"Error loading Paint controller: {e}")
+                self.app_controllers["paint"] = PlaceholderController("paint")
+                
+        if "notepad" not in self.app_controllers:
+            try:
+                # First try to import from apps
+                from apps.notepad import NotepadController
+                self.app_controllers["notepad"] = NotepadController(self.config.get("notepad", {}))
+                self.logger.info("Manually loaded controller for notepad")
+            except Exception as e:
+                self.logger.error(f"Error loading Notepad controller: {e}")
+                self.app_controllers["notepad"] = PlaceholderController("notepad")
+        
+        # For any controllers we still don't have, use placeholders
+        for app in ["calculator", "browser", "system"]:
+            if app not in self.app_controllers:
+                self.app_controllers[app] = PlaceholderController(app)
+                self.logger.warning(f"Using placeholder controller for {app}")
     
     def execute(self, intent_data: Dict[str, Any], context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
@@ -213,6 +228,16 @@ class CommandProcessor:
         
         # If no mapping found, try direct lookup
         return self.app_controllers.get(normalized_name)
+    
+    def _handle_greeting(self, parameters: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle greeting intents."""
+        return {
+            "success": True,
+            "message": "Hello! I'm Summer, your personal Windows assistant. How can I help you today?",
+            "context_update": {
+                "last_action": "greeting"
+            }
+        }
     
     def _handle_draw_shape(self, parameters: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
         """Handle the draw_shape intent."""
