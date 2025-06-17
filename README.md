@@ -2,7 +2,7 @@
 
 ## Overview
 
-Summer is a voice-activated AI assistant that can control Windows applications and perform tasks based on natural language commands. Inspired by Jarvis from Iron Man (<3), Summer aims to provide a seamless interface between users and their Windows environment.
+**Summer** is a voice-activated AI assistant that can control Windows applications and perform tasks based on natural language commands. Inspired by Jarvis from Iron Man (<3), Summer aims to provide a seamless interface between users and their Windows environment.
 
 ## Key Features
 
