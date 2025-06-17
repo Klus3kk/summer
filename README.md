@@ -1,7 +1,5 @@
 # Summer
 
-Personal AI assistant for easier management of basic Windows tasks through natural language interaction.
-
 ## Overview
 
 Summer is a voice-activated AI assistant that can control Windows applications and perform tasks based on natural language commands. Inspired by Jarvis from Iron Man (<3), Summer aims to provide a seamless interface between users and their Windows environment.
@@ -32,7 +30,7 @@ Summer is built with a modular architecture:
   - Command Processing (execution)
   - Text-to-Speech (output)
 
-- **Advanced Technologies**
+- **Technologies used**
   - **LangChain**: For sophisticated reasoning and command interpretation
   - **OpenAI GPT-4**: For advanced natural language understanding
   - **OpenAI TTS**: For lifelike voice responses
@@ -90,29 +88,6 @@ Summer is built with a modular architecture:
    - Say "Hello Summer" to begin
    - Press Ctrl+C to exit
 
-## Troubleshooting
-
-### Common Installation Issues
-
-- **PyAudio installation fails**: 
-  Try installing from a wheel file:
-  ```
-  pip install pipwin
-  pipwin install pyaudio
-  ```
-
-- **python-vlc issues**:
-  Ensure you have VLC media player installed on your system
-
-- **Speech Recognition not working**:
-  Check your microphone settings and ensure it's the default input device
-
-### Other Issues
-
-If you encounter other issues:
-1. Check the `summer.log` file for error details
-2. Ensure all dependencies are installed correctly
-3. Verify your API keys are set properly in the `.env` file
 
 ## Configuration
 
@@ -130,10 +105,3 @@ Summer can be configured through the `config.yml` file:
 - "Calculate 2345 times 873"
 - "Close all applications"
 
-## Future Enhancements
-
-- Support for more applications
-- Custom voice training
-- Expanded system control capabilities
-- Multi-language support
-- Custom skills and plugins
